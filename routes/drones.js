@@ -1,26 +1,55 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const { restart } = require("nodemon");
+const router = express.Router();
+
+const Drone = require("../models/Drone.model.js");
 
 // require the Drone model here
 
-router.get('/drones', (req, res, next) => {
-  // Iteration #2: List the drones
-  // ... your code here
-})
+router.get("/drones", async (req, res, next) => {
+  const drones = await Drone.find();
+  res.json({ drones });
+});
 
-router.post('/drones', (req, res, next) => {
-  // Iteration #3: Add a new drone
-  // ... your code here
-})
+router.post("/drones", async (req, res, next) => {
+  const bbDrones = req.body;
 
-router.post('/drones/:id', (req, res, next) => {
-  // Iteration #4: Update the drone
-  // ... your code here
-})
+  try {
+    const createdDrone = await Drone.create({
+      name: bbDrones.name,
+      propellers: bbDrones.propellers,
+      maxSpeed: bbDrones.maxSpeed,
+    });
+    res.status(201).json(createdDrone);
+  } catch (error) {
+    res.status(400).json("Bad REQUEST");
+  }
+});
 
-router.delete('/drones/:id', (req, res, next) => {
-  // Iteration #5: Delete the drone
-  // ... your code here
-})
+router.post("/drones/:id", async (req, res, next) => {
+  const newDrone = req.body;
 
-module.exports = router
+  try {
+    const drone = await Drone.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: newDrone.name,
+        propellers: newDrone.propellers,
+        maxSpeed: newDrone.propellers,
+      },
+
+      { new: true }
+    );
+    res.json({ drone });
+  } catch (error) {
+    res.status(400).json("Bad REQUEST");
+  }
+});
+
+router.delete("/drones/:id", async (req, res, next) => {
+  await Drone.findByIdAndDelete(req.params.id);
+
+  res.sendStatus(204);
+});
+
+module.exports = router;
